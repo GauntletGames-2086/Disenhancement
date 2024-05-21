@@ -82,3 +82,19 @@ pattern = "v.ability.forced_selection = nil"
 position = 'at'
 match_indent = true
 payload = '''if not (v.ability.disenhancement and v.ability.disenhancement == "me_first") then v.ability.forced_selection = nil end'''
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''if v.ability.forced_selection and not self.highlighted[1] then'''
+position = 'at'
+match_indent = true
+payload = '''if v.ability.forced_selection and not v.highlighted and not (#self.highlighted >= self.config.highlighted_limit) then'''
+
+[[patches]]
+[patches.pattern]
+target = 'blind.lua'
+pattern = "v.ability.forced_selection = nil"
+position = 'at'
+match_indent = true
+payload = '''if not (v.ability.disenhancement and v.ability.disenhancement == "me_first") then v.ability.forced_selection = nil end'''
