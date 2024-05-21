@@ -21,17 +21,23 @@ end
 [[patches]]
 [patches.regex]
 target = "card.lua"
-pattern = '''(?<indent>[\t ]*)if self\.ability\.name == 'The Soul' and \(self\.config\.center\.discovered or self\.bypass_discovery_center\) then'''
+pattern = '''(?<indent>[\t ]*)self:draw_boundingrect\(\)'''
 position = "before"
 line_prepend = "$indent"
 payload = '''
 --asdf
-for k, v in pairs(SMODS.Disenhancements) do
-    if self.ability.disenhancement and self.ability.disenhancement == v.key then
-        print("Setting disenhancement Shader")
-        G.shared_disenhancements[v.key].role.draw_major = self
-        G.shared_disenhancements[v.key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
-        G.shared_disenhancements[v.key]:draw_shader('negative_shine', nil, self.ARGS.send_to_shader)
+if self.sprite_facing == 'front' then
+    for k, v in pairs(SMODS.Disenhancements) do
+        if self.ability.disenhancement and self.ability.disenhancement == v.key then
+            G.shared_disenhancements[v.key].role.draw_major = self
+            G.shared_disenhancements[v.key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+            if v.soul_pos then
+                local scale_mod = 0.07 + 0.02*math.sin(1.8*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
+                local rotate_mod = 0.05*math.sin(1.219*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
+                G.shared_disenhancements[v.key.."soul_pos"]:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+                G.shared_disenhancements[v.key.."soul_pos"]:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+            end
+        end
     end
 end
 '''
@@ -71,8 +77,8 @@ disenhancement = self.ability and self.ability.disenhancement or nil,
 
 [[patches]]
 [patches.pattern]
-target = 'card.lua'
-pattern = "if self.edition or self.seal or self.ability.eternal or self.ability.rental or self.ability.perishable or self.sticker or self.ability.set == 'Spectral' or self.debuff or self.greyed or self.ability.name == 'The Soul' or self.ability.set == 'Voucher' or self.ability.set == 'Booster' or self.config.center.soul_pos or self.config.center.demo then"
+target = 'functions/state_events.lua'
+pattern = "v.ability.forced_selection = nil"
 position = 'at'
 match_indent = true
-payload = "if self.edition or self.seal or self.ability.eternal or self.ability.rental or self.ability.perishable or self.sticker or self.ability.set == 'Spectral' or self.debuff or self.greyed or self.ability.name == 'The Soul' or self.ability.set == 'Voucher' or self.ability.set == 'Booster' or self.config.center.soul_pos or self.config.center.demo and self.ability.disenhancement then"
+payload = '''if not (v.ability.disenhancement and v.ability.disenhancement == "me_first") then v.ability.forced_selection = nil end'''
